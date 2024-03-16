@@ -1,4 +1,3 @@
-import { ClickHouseClient, createClient } from '@clickhouse/client';
 import dateFormat from 'dateformat';
 import debug from 'debug';
 import { CLICKHOUSE } from 'lib/db';
@@ -17,25 +16,11 @@ export const CLICKHOUSE_DATE_FORMATS = {
 
 const log = debug('umami:clickhouse');
 
-let clickhouse: ClickHouseClient;
+let clickhouse: any;
 const enabled = Boolean(process.env.CLICKHOUSE_URL);
 
 function getClient() {
-  const {
-    hostname,
-    port,
-    pathname,
-    protocol,
-    username = 'default',
-    password,
-  } = new URL(process.env.CLICKHOUSE_URL);
-
-  const client = createClient({
-    host: `${protocol}//${hostname}:${port}`,
-    database: pathname.replace('/', ''),
-    username: username,
-    password,
-  });
+  const client = {};
 
   if (process.env.NODE_ENV !== 'production') {
     global[CLICKHOUSE] = client;

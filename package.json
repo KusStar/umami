@@ -64,7 +64,6 @@
     ".next/cache"
   ],
   "dependencies": {
-    "@clickhouse/client": "^0.2.2",
     "@fontsource/inter": "^4.5.15",
     "@prisma/client": "5.9.1",
     "@prisma/extension-read-replicas": "^0.3.0",
