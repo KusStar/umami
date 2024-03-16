@@ -21,8 +21,8 @@ export const labels = defineMessages({
   administrator: { id: 'label.administrator', defaultMessage: 'Administrator' },
   confirm: { id: 'label.confirm', defaultMessage: 'Confirm' },
   details: { id: 'label.details', defaultMessage: 'Details' },
-  website: { id: 'label.website', defaultMessage: 'Website' },
-  websites: { id: 'label.websites', defaultMessage: 'Websites' },
+  website: { id: 'label.website', defaultMessage: 'App' },
+  websites: { id: 'label.websites', defaultMessage: 'Apps' },
   myWebsites: { id: 'label.my-websites', defaultMessage: 'My websites' },
   teamWebsites: { id: 'label.team-websites', defaultMessage: 'Team websites' },
   created: { id: 'label.created', defaultMessage: 'Created' },
@@ -51,13 +51,13 @@ export const labels = defineMessages({
   shareUrl: { id: 'label.share-url', defaultMessage: 'Share URL' },
   actions: { id: 'label.actions', defaultMessage: 'Actions' },
   domain: { id: 'label.domain', defaultMessage: 'Domain' },
-  websiteId: { id: 'label.website-id', defaultMessage: 'Website ID' },
-  resetWebsite: { id: 'label.reset-website', defaultMessage: 'Reset website' },
-  deleteWebsite: { id: 'label.delete-website', defaultMessage: 'Delete website' },
-  transferWebsite: { id: 'label.transfer-website', defaultMessage: 'Transfer website' },
+  websiteId: { id: 'label.website-id', defaultMessage: 'App ID' },
+  resetWebsite: { id: 'label.reset-website', defaultMessage: 'Reset app' },
+  deleteWebsite: { id: 'label.delete-website', defaultMessage: 'Delete app' },
+  transferWebsite: { id: 'label.transfer-website', defaultMessage: 'Transfer app' },
   deleteReport: { id: 'label.delete-report', defaultMessage: 'Delete report' },
   reset: { id: 'label.reset', defaultMessage: 'Reset' },
-  addWebsite: { id: 'label.add-website', defaultMessage: 'Add website' },
+  addWebsite: { id: 'label.add-website', defaultMessage: 'Add app' },
   addMember: { id: 'label.add-member', defaultMessage: 'Add member' },
   editMember: { id: 'label.edit-member', defaultMessage: 'Edit member' },
   removeMember: { id: 'label.remove-member', defaultMessage: 'Remove member' },
@@ -88,7 +88,7 @@ export const labels = defineMessages({
   pages: { id: 'label.pages', defaultMessage: 'Pages' },
   referrers: { id: 'label.referrers', defaultMessage: 'Referrers' },
   screens: { id: 'label.screens', defaultMessage: 'Screens' },
-  browsers: { id: 'label.browsers', defaultMessage: 'Browsers' },
+  browsers: { id: 'label.browsers', defaultMessage: 'Apps' },
   os: { id: 'label.os', defaultMessage: 'OS' },
   devices: { id: 'label.devices', defaultMessage: 'Devices' },
   countries: { id: 'label.countries', defaultMessage: 'Countries' },
@@ -113,7 +113,7 @@ export const labels = defineMessages({
   thisYear: { id: 'label.this-year', defaultMessage: 'This year' },
   allTime: { id: 'label.all-time', defaultMessage: 'All time' },
   customRange: { id: 'label.custom-range', defaultMessage: 'Custom range' },
-  selectWebsite: { id: 'label.select-website', defaultMessage: 'Select website' },
+  selectWebsite: { id: 'label.select-website', defaultMessage: 'Select app' },
   selectRole: { id: 'label.select-role', defaultMessage: 'Select role' },
   selectDate: { id: 'label.select-date', defaultMessage: 'Select date' },
   all: { id: 'label.all', defaultMessage: 'All' },
@@ -188,7 +188,7 @@ export const labels = defineMessages({
   retention: { id: 'label.retention', defaultMessage: 'Retention' },
   retentionDescription: {
     id: 'label.retention-description',
-    defaultMessage: 'Measure your website stickiness by tracking how often users return.',
+    defaultMessage: 'Measure your app stickiness by tracking how often users return.',
   },
   dropoff: { id: 'label.dropoff', defaultMessage: 'Dropoff' },
   referrer: { id: 'label.referrer', defaultMessage: 'Referrer' },
@@ -256,12 +256,12 @@ export const messages = defineMessages({
   },
   shareUrl: {
     id: 'message.share-url',
-    defaultMessage: 'Your website stats are publicly available at the following URL:',
+    defaultMessage: 'Your app stats are publicly available at the following URL:',
   },
   trackingCode: {
     id: 'message.tracking-code',
     defaultMessage:
-      'To track stats for this website, place the following code in the <head>...</head> section of your HTML.',
+      'To track stats for this app, place the following code in the <head>...</head> section of your HTML.',
   },
   joinTeamWarning: {
     id: 'message.team-already-member',
@@ -273,7 +273,7 @@ export const messages = defineMessages({
   },
   resetWebsite: {
     id: 'message.reset-website',
-    defaultMessage: 'To reset this website, type {confirmation} in the box below to confirm.',
+    defaultMessage: 'To reset this app, type {confirmation} in the box below to confirm.',
   },
   invalidDomain: {
     id: 'message.invalid-domain',
@@ -282,11 +282,11 @@ export const messages = defineMessages({
   resetWebsiteWarning: {
     id: 'message.reset-website-warning',
     defaultMessage:
-      'All statistics for this website will be deleted, but your settings will remain intact.',
+      'All statistics for this app will be deleted, but your settings will remain intact.',
   },
   deleteWebsiteWarning: {
     id: 'message.delete-website-warning',
-    defaultMessage: 'All website data will be deleted.',
+    defaultMessage: 'All app data will be deleted.',
   },
   deleteTeamWarning: {
     id: 'message.delete-team-warning',
@@ -306,7 +306,7 @@ export const messages = defineMessages({
   },
   teamWebsitesInfo: {
     id: 'message.team-websites-info',
-    defaultMessage: 'Websites can be viewed by anyone on the team.',
+    defaultMessage: 'Apps can be viewed by anyone on the team.',
   },
   noMatchPassword: { id: 'message.no-match-password', defaultMessage: 'Passwords do not match.' },
   goToSettings: {
@@ -343,14 +343,14 @@ export const messages = defineMessages({
   },
   transferWebsite: {
     id: 'message.transfer-website',
-    defaultMessage: 'Transfer website ownership to your account or another team.',
+    defaultMessage: 'Transfer app ownership to your account or another team.',
   },
   transferTeamWebsiteToUser: {
     id: 'message.transfer-team-website-to-user',
-    defaultMessage: 'Transfer this website to your account?',
+    defaultMessage: 'Transfer this app to your account?',
   },
   transferUserWebsiteToTeam: {
     id: 'message.transfer-user-website-to-team',
-    defaultMessage: 'Select the team to transfer this website to.',
+    defaultMessage: 'Select the team to transfer this app to.',
   },
 });

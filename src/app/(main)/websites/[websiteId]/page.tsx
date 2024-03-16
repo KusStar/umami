@@ -6,5 +6,5 @@ export default function WebsitePage({ params: { websiteId } }) {
 }
 
 export const metadata: Metadata = {
-  title: 'Websites',
+  title: 'Apps',
 };
