@@ -13,7 +13,7 @@ import * as yup from 'yup';
 export interface CollectRequestBody {
   payload: {
     data: { [key: string]: any };
-    hostname: string;
+    hostname?: string;
     ip: string;
     language: string;
     referrer: string;
@@ -22,6 +22,8 @@ export interface CollectRequestBody {
     url: string;
     website: string;
     name: string;
+    app?: string;
+    os?: string;
   };
   type: CollectionType;
 }
@@ -53,7 +55,7 @@ const schema = {
       .object()
       .shape({
         data: yup.object(),
-        hostname: yup.string().matches(HOSTNAME_REGEX).max(100),
+        hostname: yup.string().matches(HOSTNAME_REGEX).max(100).optional(),
         ip: yup.string().matches(IP_REGEX),
         language: yup.string().max(35),
         referrer: yup.string(),
@@ -74,8 +76,12 @@ const schema = {
 export default async (req: NextApiRequestCollect, res: NextApiResponse) => {
   await useCors(req, res);
 
+  const { type, payload } = req.body;
+
+  const isApp = payload.app || payload.os;
+
   if (req.method === 'POST') {
-    if (!process.env.DISABLE_BOT_CHECK && isbot(req.headers['user-agent'])) {
+    if (!process.env.DISABLE_BOT_CHECK && isbot(req.headers['user-agent']) && !isApp) {
       return ok(res);
     }
 
@@ -84,8 +90,6 @@ export default async (req: NextApiRequestCollect, res: NextApiResponse) => {
     if (hasBlockedIp(req)) {
       return forbidden(res);
     }
-
-    const { type, payload } = req.body;
 
     const { url, referrer, name: eventName, data: eventData, title: pageTitle } = payload;
 

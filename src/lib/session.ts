@@ -44,10 +44,12 @@ export async function findSession(req: NextApiRequestCollect): Promise<{
   // Verify payload
   const { website: websiteId, hostname, screen, language } = payload;
 
-  // Check the hostname value for legality to eliminate dirty data
-  const validHostnameRegex = /^[\w-.]+$/;
-  if (!validHostnameRegex.test(hostname)) {
-    throw new Error('Invalid hostname.');
+  if (hostname) {
+    // Check the hostname value for legality to eliminate dirty data
+    const validHostnameRegex = /^[\w-.]+$/;
+    if (!validHostnameRegex.test(hostname)) {
+      throw new Error('Invalid hostname.');
+    }
   }
 
   if (!isUuid(websiteId)) {
