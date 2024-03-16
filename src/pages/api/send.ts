@@ -19,11 +19,12 @@ export interface CollectRequestBody {
     referrer: string;
     screen: string;
     title: string;
-    url: string;
+    url?: string;
     website: string;
     name: string;
     app?: string;
     os?: string;
+    page?: string;
   };
   type: CollectionType;
 }
@@ -61,9 +62,12 @@ const schema = {
         referrer: yup.string(),
         screen: yup.string().max(11),
         title: yup.string(),
-        url: yup.string(),
+        url: yup.string().optional(),
         website: yup.string().uuid().required(),
         name: yup.string().max(50),
+        app: yup.string().optional(),
+        os: yup.string().optional(),
+        page: yup.string().optional(),
       })
       .required(),
     type: yup
@@ -91,7 +95,7 @@ export default async (req: NextApiRequestCollect, res: NextApiResponse) => {
       return forbidden(res);
     }
 
-    const { url, referrer, name: eventName, data: eventData, title: pageTitle } = payload;
+    const { url, page, referrer, name: eventName, data: eventData, title: pageTitle } = payload;
 
     await useSession(req, res);
 
@@ -99,7 +103,7 @@ export default async (req: NextApiRequestCollect, res: NextApiResponse) => {
 
     if (type === COLLECTION_TYPE.event) {
       // eslint-disable-next-line prefer-const
-      let [urlPath, urlQuery] = url?.split('?') || [];
+      let [urlPath, urlQuery] = (page || url)?.split('?') || [];
       let [referrerPath, referrerQuery] = referrer?.split('?') || [];
       let referrerDomain;
 
