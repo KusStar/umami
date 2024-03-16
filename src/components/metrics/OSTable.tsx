@@ -1,6 +1,8 @@
 import MetricsTable, { MetricsTableProps } from './MetricsTable';
 import FilterLink from 'components/common/FilterLink';
 import { useMessages, useFormat } from 'components/hooks';
+import { generateFromString } from 'generate-avatar';
+import { OS_NAMES } from 'lib/constants';
 
 export function OSTable(props: MetricsTableProps) {
   const { formatMessage, labels } = useMessages();
@@ -10,12 +12,19 @@ export function OSTable(props: MetricsTableProps) {
     return (
       <FilterLink id="os" value={os} label={formatOS(os)}>
         <img
-          src={`${process.env.basePath || ''}/images/os/${
-            os?.toLowerCase().replaceAll(/\W/g, '-') || 'unknown'
-          }.png`}
+          src={
+            OS_NAMES[os]
+              ? `${process.env.basePath || ''}/images/os/${
+                  os?.toLowerCase().replaceAll(/\W/g, '-') || 'unknown'
+                }.png`
+              : `data:image/svg+xml;utf8,${generateFromString(os)}`
+          }
           alt={os}
           width={16}
           height={16}
+          style={{
+            borderRadius: '20%',
+          }}
         />
       </FilterLink>
     );
