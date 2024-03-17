@@ -17,7 +17,7 @@ export interface CollectRequestBody {
     ip: string;
     language: string;
     referrer: string;
-    screen: string;
+    screen?: string;
     title: string;
     url?: string;
     website: string;
@@ -25,6 +25,7 @@ export interface CollectRequestBody {
     app?: string;
     os?: string;
     page?: string;
+    device?: string;
   };
   type: CollectionType;
 }
@@ -39,7 +40,7 @@ export interface NextApiRequestCollect extends NextApiRequest {
     browser: string;
     os: string;
     device: string;
-    screen: string;
+    screen?: string;
     language: string;
     country: string;
     subdivision1: string;
@@ -60,7 +61,7 @@ const schema = {
         ip: yup.string().matches(IP_REGEX),
         language: yup.string().max(35),
         referrer: yup.string(),
-        screen: yup.string().max(11),
+        screen: yup.string().max(11).optional(),
         title: yup.string(),
         url: yup.string().optional(),
         website: yup.string().required(),
@@ -68,6 +69,7 @@ const schema = {
         app: yup.string().optional(),
         os: yup.string().optional(),
         page: yup.string().optional(),
+        device: yup.string().optional(),
       })
       .required(),
     type: yup
