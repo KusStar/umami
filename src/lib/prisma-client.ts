@@ -1,7 +1,9 @@
 import { PrismaClient } from '@prisma/client';
-import { PrismaClientOptions, RawValue } from '@prisma/client/runtime/library';
+import { DriverAdapter, PrismaClientOptions, RawValue } from '@prisma/client/runtime/library';
 import { PRISMA, SQLITE, getDatabaseType } from 'lib/db';
 import debug from 'debug';
+import { PrismaLibSQL } from '@prisma/adapter-libsql';
+import { createClient } from '@libsql/client';
 
 const log = debug('umami:prisma-client');
 
@@ -20,18 +22,32 @@ export function getClient(params?: {
   options?: PrismaClientOptions;
 }): PrismaClient {
   const { logQuery = !!process.env.LOG_QUERY, queryLogger, options } = params || {};
+  let adapter: DriverAdapter = null;
+  const dbType = getDatabaseType();
 
+  if (dbType === SQLITE) {
+    const libsql = createClient({
+      url: `${process.env.TURSO_DATABASE_URL}`,
+      authToken: `${process.env.TURSO_AUTH_TOKEN}`,
+    });
+
+    adapter = new PrismaLibSQL(libsql);
+  }
+
+  // @ts-expect-error ignore
   let client = new PrismaClient({
     errorFormat: 'pretty',
+    adapter: adapter,
     ...(logQuery && PRISMA_LOG_OPTIONS),
     ...options,
   });
 
   if (logQuery) {
+    // @ts-expect-error ignore
     client.$on('query', queryLogger || log);
   }
 
-  if (getDatabaseType() === SQLITE) {
+  if (dbType === SQLITE) {
     /*
      * Date
      */
@@ -59,6 +75,7 @@ export function getClient(params?: {
       return query(args);
     };
 
+    // @ts-expect-error ignore
     client = client.$extends({
       client: {
         $dbDate: dbDate,
@@ -70,12 +87,14 @@ export function getClient(params?: {
       result: {
         $allModels: {
           createdAt: {
+            // @ts-expect-error ignore
             needs: { createdAt: true },
             compute(model) {
               return model.createdAt * 1000;
             },
           },
           updatedAt: {
+            // @ts-expect-error ignore
             needs: { updatedAt: true },
             compute(model) {
               return model.updatedAt ? model.updatedAt * 1000 : null;
@@ -91,6 +110,7 @@ export function getClient(params?: {
     const handleCreateMany = (model, { data: dataArray }) => {
       return Promise.all(
         dataArray.map(async data => {
+          // @ts-expect-error ignore
           await client[model].create({
             data,
           });
@@ -101,7 +121,9 @@ export function getClient(params?: {
       client[key].createMany = handleCreateMany.bind(null, key);
     });
   } else {
+    //  @ts-expect-error ignore
     client.$dbDate = arg => arg;
+    // @ts-expect-error ignore
     client.$rawDateQuery = arg => arg;
   }
 
