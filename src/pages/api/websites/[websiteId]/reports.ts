@@ -13,7 +13,7 @@ export interface ReportsRequestQuery extends SearchFilter {
 
 const schema = {
   GET: yup.object().shape({
-    websiteId: yup.string().uuid().required(),
+    websiteId: yup.string().required(),
     ...pageInfo,
   }),
 };

@@ -1,4 +1,4 @@
-import { isUuid, secret, uuid } from 'lib/crypto';
+import { secret, uuid } from 'lib/crypto';
 import { getClientInfo } from 'lib/detect';
 import { parseToken } from 'next-basics';
 import { NextApiRequestCollect } from 'pages/api/send';
@@ -50,10 +50,6 @@ export async function findSession(req: NextApiRequestCollect): Promise<{
     if (!validHostnameRegex.test(hostname)) {
       throw new Error('Invalid hostname.');
     }
-  }
-
-  if (!isUuid(websiteId)) {
-    throw new Error('Invalid website ID.');
   }
 
   // Find website

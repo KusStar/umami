@@ -25,6 +25,7 @@ export function WebsitesTable({
 
   return (
     <GridTable data={data} cardMode={['xs', 'sm', 'md'].includes(breakpoint)}>
+      <GridColumn name="id" label={formatMessage(labels.websiteId)} />
       <GridColumn name="name" label={formatMessage(labels.name)} />
       <GridColumn name="domain" label={formatMessage(labels.domain)} />
       {showActions && (

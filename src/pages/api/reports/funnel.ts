@@ -25,7 +25,7 @@ export interface FunnelResponse {
 
 const schema = {
   POST: yup.object().shape({
-    websiteId: yup.string().uuid().required(),
+    websiteId: yup.string().required(),
     urls: yup.array().min(2).of(yup.string()).required(),
     window: yup.number().positive().required(),
     dateRange: yup

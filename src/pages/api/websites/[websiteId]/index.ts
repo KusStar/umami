@@ -20,16 +20,16 @@ import * as yup from 'yup';
 
 const schema = {
   GET: yup.object().shape({
-    websiteId: yup.string().uuid().required(),
+    websiteId: yup.string().required(),
   }),
   POST: yup.object().shape({
-    websiteId: yup.string().uuid().required(),
+    websiteId: yup.string().required(),
     name: yup.string(),
     domain: yup.string(),
     shareId: yup.string().matches(SHARE_ID_REGEX, { excludeEmptyString: true }).nullable(),
   }),
   DELETE: yup.object().shape({
-    websiteId: yup.string().uuid().required(),
+    websiteId: yup.string().required(),
   }),
 };
 

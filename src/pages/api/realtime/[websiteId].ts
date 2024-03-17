@@ -15,7 +15,7 @@ export interface RealtimeRequestQuery {
 
 const schema = {
   GET: yup.object().shape({
-    websiteId: yup.string().uuid().required(),
+    websiteId: yup.string().required(),
     startAt: yup.number().integer().required(),
   }),
 };

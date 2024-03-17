@@ -14,7 +14,7 @@ export interface EventDataStatsRequestQuery {
 
 const schema = {
   GET: yup.object().shape({
-    websiteId: yup.string().uuid().required(),
+    websiteId: yup.string().required(),
     startAt: yup.number().integer().required(),
     endAt: yup.number().integer().moreThan(yup.ref('startAt')).required(),
   }),

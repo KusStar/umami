@@ -3,8 +3,8 @@ import { uuid } from 'lib/crypto';
 import { useAuth, useCors, useValidate } from 'lib/middleware';
 import { NextApiRequestQueryBody, SearchFilter } from 'lib/types';
 import { NextApiResponse } from 'next';
-import { methodNotAllowed, ok, unauthorized } from 'next-basics';
-import { createWebsite } from 'queries';
+import { methodNotAllowed, ok, unauthorized, badRequest } from 'next-basics';
+import { createWebsite, getWebsite } from 'queries';
 import userWebsitesRoute from 'pages/api/users/[userId]/websites';
 import * as yup from 'yup';
 import { pageInfo } from 'lib/schema';
@@ -12,6 +12,7 @@ import { pageInfo } from 'lib/schema';
 export interface WebsitesRequestQuery extends SearchFilter {}
 
 export interface WebsitesRequestBody {
+  websiteId?: string;
   name: string;
   domain: string;
   shareId: string;
@@ -27,6 +28,7 @@ const schema = {
     domain: yup.string().max(500).required(),
     shareId: yup.string().max(50).nullable(),
     teamId: yup.string().nullable(),
+    websiteId: yup.string().max(100).optional(),
   }),
 };
 
@@ -51,7 +53,7 @@ export default async (
   }
 
   if (req.method === 'POST') {
-    const { name, domain, shareId, teamId } = req.body;
+    const { name, domain, shareId, teamId, websiteId } = req.body;
 
     if (
       (teamId && !(await canCreateTeamWebsite(req.auth, teamId))) ||
@@ -60,8 +62,12 @@ export default async (
       return unauthorized(res);
     }
 
+    if (websiteId && (await getWebsite(websiteId))) {
+      return badRequest(res, `app '${websiteId}' already exist! Use another id instead.`);
+    }
+
     const data: any = {
-      id: uuid(),
+      id: websiteId ? websiteId : uuid(),
       createdBy: userId,
       name,
       domain,

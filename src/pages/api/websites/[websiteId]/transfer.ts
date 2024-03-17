@@ -17,7 +17,7 @@ export interface WebsiteTransferRequestBody {
 
 const schema = {
   POST: yup.object().shape({
-    websiteId: yup.string().uuid().required(),
+    websiteId: yup.string().required(),
     userId: yup.string().uuid(),
     teamId: yup.string().uuid(),
   }),

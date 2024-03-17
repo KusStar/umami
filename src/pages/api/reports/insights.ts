@@ -19,7 +19,7 @@ export interface InsightsRequestBody {
 
 const schema = {
   POST: yup.object().shape({
-    websiteId: yup.string().uuid().required(),
+    websiteId: yup.string().required(),
     dateRange: yup
       .object()
       .shape({

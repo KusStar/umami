@@ -63,7 +63,7 @@ const schema = {
         screen: yup.string().max(11),
         title: yup.string(),
         url: yup.string().optional(),
-        website: yup.string().uuid().required(),
+        website: yup.string().required(),
         name: yup.string().max(50),
         app: yup.string().optional(),
         os: yup.string().optional(),

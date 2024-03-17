@@ -32,7 +32,7 @@ export interface WebsiteMetricsRequestQuery {
 
 const schema = {
   GET: yup.object().shape({
-    websiteId: yup.string().uuid().required(),
+    websiteId: yup.string().required(),
     type: yup.string().required(),
     startAt: yup.number().required(),
     endAt: yup.number().required(),

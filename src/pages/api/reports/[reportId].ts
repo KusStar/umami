@@ -24,7 +24,7 @@ const schema: YupRequest = {
   }),
   POST: yup.object().shape({
     reportId: yup.string().uuid().required(),
-    websiteId: yup.string().uuid().required(),
+    websiteId: yup.string().required(),
     type: yup
       .string()
       .matches(/funnel|insights|retention/i)

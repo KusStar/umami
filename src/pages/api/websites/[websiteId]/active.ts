@@ -12,7 +12,7 @@ export interface WebsiteActiveRequestQuery {
 
 const schema = {
   GET: yup.object().shape({
-    websiteId: yup.string().uuid().required(),
+    websiteId: yup.string().required(),
   }),
 };
 

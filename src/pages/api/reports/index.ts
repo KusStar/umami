@@ -23,7 +23,7 @@ const schema = {
     ...pageInfo,
   }),
   POST: yup.object().shape({
-    websiteId: yup.string().uuid().required(),
+    websiteId: yup.string().required(),
     name: yup.string().max(200).required(),
     type: yup
       .string()

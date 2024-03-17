@@ -27,7 +27,7 @@ export interface WebsiteStatsRequestQuery {
 import * as yup from 'yup';
 const schema = {
   GET: yup.object().shape({
-    websiteId: yup.string().uuid().required(),
+    websiteId: yup.string().required(),
     startAt: yup.number().required(),
     endAt: yup.number().required(),
     url: yup.string(),

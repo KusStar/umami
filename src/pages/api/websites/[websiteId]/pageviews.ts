@@ -27,7 +27,7 @@ import { TimezoneTest, UnitTypeTest } from 'lib/yup';
 import * as yup from 'yup';
 const schema = {
   GET: yup.object().shape({
-    websiteId: yup.string().uuid().required(),
+    websiteId: yup.string().required(),
     startAt: yup.number().required(),
     endAt: yup.number().required(),
     unit: UnitTypeTest,

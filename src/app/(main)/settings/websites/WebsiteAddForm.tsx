@@ -37,6 +37,11 @@ export function WebsiteAddForm({
 
   return (
     <Form onSubmit={handleSubmit} error={error}>
+      <FormRow label={formatMessage(labels.websiteId)}>
+        <FormInput data-test="input-id" name="websiteId">
+          <TextField autoComplete="off" />
+        </FormInput>
+      </FormRow>
       <FormRow label={formatMessage(labels.name)}>
         <FormInput
           data-test="input-name"
