@@ -152,14 +152,14 @@ export async function deleteUser(
     return transaction([
       client.website.updateMany({
         data: {
-          deletedAt: new Date(),
+          deletedAt: client.$dbDate(new Date()),
         },
         where: { id: { in: websiteIds } },
       }),
       client.user.update({
         data: {
           username: getRandomChars(32),
-          deletedAt: new Date(),
+          deletedAt: client.$dbDate(new Date()),
         },
         where: {
           id: userId,

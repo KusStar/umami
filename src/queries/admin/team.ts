@@ -106,10 +106,7 @@ export async function updateTeam(teamId: string, data: Prisma.TeamUpdateInput): 
     where: {
       id: teamId,
     },
-    data: {
-      ...data,
-      updatedAt: new Date(),
-    },
+    data,
   });
 }
 
@@ -123,7 +120,7 @@ export async function deleteTeam(
     return transaction([
       client.team.update({
         data: {
-          deletedAt: new Date(),
+          deletedAt: client.$dbDate(new Date()),
         },
         where: {
           id: teamId,

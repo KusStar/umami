@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client';
-import prisma from '@umami/prisma-client';
+import prisma from 'lib/prisma-client';
 import moment from 'moment-timezone';
-import { MYSQL, POSTGRESQL, getDatabaseType } from 'lib/db';
+import { MYSQL, POSTGRESQL, SQLITE, getDatabaseType } from 'lib/db';
 import { FILTER_COLUMNS, SESSION_COLUMNS, OPERATORS, DEFAULT_PAGE_SIZE } from './constants';
 import { loadWebsite } from './load';
 import { maxDate } from './date';
@@ -23,6 +23,14 @@ const POSTGRESQL_DATE_FORMATS = {
   year: 'YYYY-01-01',
 };
 
+const SQLITE_DATE_FORMATS = {
+  minute: '%Y-%m-%d %H:%M:00',
+  hour: '%Y-%m-%d %H:00:00',
+  day: '%Y-%m-%d',
+  month: '%Y-%m-01',
+  year: '%Y-01-01',
+};
+
 function getAddIntervalQuery(field: string, interval: string): string {
   const db = getDatabaseType();
 
@@ -32,6 +40,10 @@ function getAddIntervalQuery(field: string, interval: string): string {
 
   if (db === MYSQL) {
     return `DATE_ADD(${field}, interval ${interval})`;
+  }
+
+  if (db === SQLITE) {
+    return `strftime('%s', ${field}, 'unixepoch', '${interval}')`;
   }
 }
 
@@ -45,6 +57,10 @@ function getDayDiffQuery(field1: string, field2: string): string {
   if (db === MYSQL) {
     return `DATEDIFF(${field1}, ${field2})`;
   }
+
+  if (db === SQLITE) {
+    return `((${field2} - ${field1}) / 86400)`;
+  }
 }
 
 function getCastColumnQuery(field: string, type: string): string {
@@ -54,7 +70,7 @@ function getCastColumnQuery(field: string, type: string): string {
     return `${field}::${type}`;
   }
 
-  if (db === MYSQL) {
+  if (db === MYSQL || db === SQLITE) {
     return `${field}`;
   }
 }
@@ -78,6 +94,14 @@ function getDateQuery(field: string, unit: string, timezone?: string): string {
 
     return `date_format(${field}, '${MYSQL_DATE_FORMATS[unit]}')`;
   }
+
+  if (db === SQLITE) {
+    if (timezone) {
+      const tz = moment.tz(timezone).format('Z').substring(0, 3);
+      return `strftime('${SQLITE_DATE_FORMATS[unit]}', ${field}, 'unixepoch', '${tz} hours')`;
+    }
+    return `strftime('${SQLITE_DATE_FORMATS[unit]}', ${field}, 'unixepoch')`;
+  }
 }
 
 function getTimestampDiffQuery(field1: string, field2: string): string {
@@ -89,6 +113,10 @@ function getTimestampDiffQuery(field1: string, field2: string): string {
 
   if (db === MYSQL) {
     return `timestampdiff(second, ${field1}, ${field2})`;
+  }
+
+  if (db === SQLITE) {
+    return `${field2} - ${field1}`;
   }
 }
 
@@ -163,7 +191,7 @@ async function rawQuery(sql: string, data: object): Promise<any> {
   const db = getDatabaseType();
   const params = [];
 
-  if (db !== POSTGRESQL && db !== MYSQL) {
+  if (db !== POSTGRESQL && db !== MYSQL && db !== SQLITE) {
     return Promise.reject(new Error('Unknown database.'));
   }
 
@@ -171,7 +199,7 @@ async function rawQuery(sql: string, data: object): Promise<any> {
     const [, name, type] = args;
     params.push(data[name]);
 
-    return db === MYSQL ? '?' : `$${params.length}${type ?? ''}`;
+    return db !== POSTGRESQL ? '?' : `$${params.length}${type ?? ''}`;
   });
 
   return prisma.rawQuery(query, params);

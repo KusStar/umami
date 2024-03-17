@@ -1,0 +1,214 @@
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider     = "sqlite"
+  url      = "file:./dev.db"
+  relationMode = "prisma"
+}
+
+model User {
+  id          String  @unique @map("user_id")
+  username    String  @unique
+  password    String
+  role        String  @map("role")
+  logoUrl     String? @map("logo_url")
+  displayName String? @map("display_name")
+  createdAt   Int?    @default(dbgenerated("unixepoch()")) @map("created_at")
+  updatedAt   Int?    @map("updated_at")
+  deletedAt   Int?    @map("deleted_at")
+
+  websiteUser       Website[]  @relation("user")
+  websiteCreateUser Website[]  @relation("createUser")
+  teamUser          TeamUser[]
+  report            Report[]
+
+  @@map("user")
+}
+
+model Session {
+  id           String  @unique @map("session_id")
+  websiteId    String  @map("website_id")
+  hostname     String?
+  browser      String?
+  os           String?
+  device       String?
+  screen       String?
+  language     String?
+  country      String?
+  subdivision1 String?
+  subdivision2 String?
+  city         String?
+  createdAt    Int?    @default(dbgenerated("unixepoch()")) @map("created_at")
+
+  websiteEvent WebsiteEvent[]
+  sessionData  SessionData[]
+
+  @@index([createdAt])
+  @@index([websiteId])
+  @@index([websiteId, createdAt])
+  @@index([websiteId, createdAt, hostname])
+  @@index([websiteId, createdAt, browser])
+  @@index([websiteId, createdAt, os])
+  @@index([websiteId, createdAt, device])
+  @@index([websiteId, createdAt, screen])
+  @@index([websiteId, createdAt, language])
+  @@index([websiteId, createdAt, country])
+  @@index([websiteId, createdAt, subdivision1])
+  @@index([websiteId, createdAt, city])
+  @@map("session")
+}
+
+model Website {
+  id        String  @unique @map("website_id")
+  name      String
+  domain    String?
+  shareId   String? @unique @map("share_id")
+  resetAt   Int?    @map("reset_at")
+  userId    String? @map("user_id")
+  teamId    String? @map("team_id")
+  createdBy String? @map("created_by")
+  createdAt Int?    @default(dbgenerated("unixepoch()")) @map("created_at")
+  updatedAt Int?    @map("updated_at")
+  deletedAt Int?    @map("deleted_at")
+
+  user        User?         @relation("user", fields: [userId], references: [id])
+  createUser  User?         @relation("createUser", fields: [createdBy], references: [id])
+  team        Team?         @relation(fields: [teamId], references: [id])
+  eventData   EventData[]
+  report      Report[]
+  sessionData SessionData[]
+
+  @@index([userId])
+  @@index([teamId])
+  @@index([createdAt])
+  @@index([createdBy])
+  @@map("website")
+}
+
+model WebsiteEvent {
+  id             String  @unique @map("event_id")
+  websiteId      String  @map("website_id")
+  sessionId      String  @map("session_id")
+  createdAt      Int?    @default(dbgenerated("unixepoch()")) @map("created_at")
+  urlPath        String  @map("url_path")
+  urlQuery       String? @map("url_query")
+  referrerPath   String? @map("referrer_path")
+  referrerQuery  String? @map("referrer_query")
+  referrerDomain String? @map("referrer_domain")
+  pageTitle      String? @map("page_title")
+  eventType      Int     @default(1) @map("event_type")
+  eventName      String? @map("event_name")
+
+  eventData EventData[]
+  session   Session     @relation(fields: [sessionId], references: [id])
+
+  @@index([createdAt])
+  @@index([sessionId])
+  @@index([websiteId])
+  @@index([websiteId, createdAt])
+  @@index([websiteId, createdAt, urlPath])
+  @@index([websiteId, createdAt, urlQuery])
+  @@index([websiteId, createdAt, referrerDomain])
+  @@index([websiteId, createdAt, pageTitle])
+  @@index([websiteId, createdAt, eventName])
+  @@index([websiteId, sessionId, createdAt])
+  @@map("website_event")
+}
+
+model EventData {
+  id             String   @unique @map("event_data_id")
+  websiteId      String   @map("website_id")
+  websiteEventId String   @map("website_event_id")
+  eventKey       String   @map("event_key")
+  stringValue    String?  @map("string_value")
+  numberValue    Decimal? @map("number_value")
+  dateValue      Int?     @map("date_value")
+  dataType       Int      @map("data_type")
+  createdAt      Int?     @default(dbgenerated("unixepoch()")) @map("created_at")
+
+  website      Website      @relation(fields: [websiteId], references: [id])
+  websiteEvent WebsiteEvent @relation(fields: [websiteEventId], references: [id])
+
+  @@index([createdAt])
+  @@index([websiteId])
+  @@index([websiteEventId])
+  @@index([websiteId, websiteEventId, createdAt])
+  @@index([websiteId, createdAt])
+  @@index([websiteId, createdAt, eventKey])
+  @@map("event_data")
+}
+
+model SessionData {
+  id          String   @unique @map("session_data_id")
+  websiteId   String   @map("website_id")
+  sessionId   String   @map("session_id")
+  eventKey    String   @map("event_key")
+  stringValue String?  @map("string_value")
+  numberValue Decimal? @map("number_value")
+  dateValue   Int?     @map("date_value")
+  dataType    Int      @map("data_type")
+  createdAt   Int?     @default(dbgenerated("unixepoch()")) @map("created_at")
+
+  website Website @relation(fields: [websiteId], references: [id])
+  session Session @relation(fields: [sessionId], references: [id])
+
+  @@index([createdAt])
+  @@index([websiteId])
+  @@index([sessionId])
+  @@map("session_data")
+}
+
+model Team {
+  id         String  @unique @map("team_id")
+  name       String
+  accessCode String? @unique @map("access_code")
+  logoUrl    String? @map("logo_url")
+  createdAt  Int?    @default(dbgenerated("unixepoch()")) @map("created_at")
+  updatedAt  Int?    @map("updated_at")
+  deletedAt  Int?    @map("deleted_at")
+
+  website  Website[]
+  teamUser TeamUser[]
+
+  @@map("team")
+}
+
+model TeamUser {
+  id        String @unique @map("team_user_id")
+  teamId    String @map("team_id")
+  userId    String @map("user_id")
+  role      String @map("role")
+  createdAt Int?   @default(dbgenerated("unixepoch()")) @map("created_at")
+  updatedAt Int?   @map("updated_at")
+
+  team Team @relation(fields: [teamId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([teamId])
+  @@index([userId])
+  @@map("team_user")
+}
+
+model Report {
+  id          String @unique @map("report_id")
+  userId      String @map("user_id")
+  websiteId   String @map("website_id")
+  type        String @map("type")
+  name        String @map("name")
+  description String @map("description")
+  parameters  String @map("parameters")
+  createdAt   Int?   @default(dbgenerated("unixepoch()")) @map("created_at")
+  updatedAt   Int?   @map("updated_at")
+
+  user    User    @relation(fields: [userId], references: [id])
+  website Website @relation(fields: [websiteId], references: [id])
+
+  @@index([userId])
+  @@index([websiteId])
+  @@index([type])
+  @@index([name])
+  @@map("report")
+}

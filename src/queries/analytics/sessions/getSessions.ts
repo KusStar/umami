@@ -14,7 +14,7 @@ async function relationalQuery(websiteId: string, startDate: Date) {
     where: {
       websiteId,
       createdAt: {
-        gte: startDate,
+        gte: prisma.client.$dbDate(startDate),
       },
     },
     orderBy: {

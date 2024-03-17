@@ -15,7 +15,7 @@ function relationalQuery(websiteId: string, startDate: Date, eventType: number) 
       websiteId,
       eventType,
       createdAt: {
-        gte: startDate,
+        gte: prisma.client.$dbDate(startDate),
       },
     },
     orderBy: {

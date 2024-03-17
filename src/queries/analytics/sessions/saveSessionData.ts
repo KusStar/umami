@@ -21,7 +21,7 @@ export async function saveSessionData(data: {
     key: a.key,
     stringValue: getStringValue(a.value, a.dataType),
     numberValue: a.dataType === DATA_TYPE.number ? a.value : null,
-    dateValue: a.dataType === DATA_TYPE.date ? new Date(a.value) : null,
+    dateValue: a.dataType === DATA_TYPE.date ? client.$dbDate(new Date(a.value)) : null,
     dataType: a.dataType,
   }));
 

@@ -17,10 +17,15 @@ function getDatabaseType(url = process.env.DATABASE_URL) {
     return 'postgresql';
   }
 
+  if (type === 'file') {
+    return 'sqlite';
+  }
+
   return type;
 }
 
 const prisma = new PrismaClient();
+const databaseType = getDatabaseType();
 
 function success(msg) {
   console.log(chalk.greenBright(`✓ ${msg}`));
@@ -49,31 +54,31 @@ async function checkConnection() {
 }
 
 async function checkDatabaseVersion() {
-  const query = await prisma.$queryRaw`select version() as version`;
-  const version = semver.valid(semver.coerce(query[0].version));
+  if (databaseType !== 'sqlite') {
+    const query = await prisma.$queryRaw`select version() as version`;
+    const version = semver.valid(semver.coerce(query[0].version));
 
-  const databaseType = getDatabaseType();
-  const minVersion = databaseType === 'postgresql' ? '9.4.0' : '5.7.0';
+    const minVersion = databaseType === 'postgresql' ? '9.4.0' : '5.7.0';
 
-  if (semver.lt(version, minVersion)) {
-    throw new Error(
-      `Database version is not compatible. Please upgrade ${databaseType} version to ${minVersion} or greater`,
-    );
+    if (semver.lt(version, minVersion)) {
+      throw new Error(
+        `Database version is not compatible. Please upgrade ${databaseType} version to ${minVersion} or greater`,
+      );
+    }
+
+    success('Database version check successful.');
   }
-
-  success('Database version check successful.');
 }
 
 async function checkV1Tables() {
+  // check for v1 migrations before v2 release date
+  const releaseDate = databaseType !== 'sqlite' ? "'2023-04-17'" : 1686268800000;
   try {
-    // check for v1 migrations before v2 release date
     const record =
-      await prisma.$queryRaw`select * from _prisma_migrations where started_at < '2023-04-17'`;
+      await prisma.$queryRaw`select * from _prisma_migrations where started_at < ${releaseDate}`;
 
     if (record.length > 0) {
-      error(
-        'Umami v1 tables detected. For how to upgrade from v1 to v2 go to https://umami.is/docs/migrate-v1-v2.',
-      );
+      error('Umami v1 tables detected.');
       process.exit(1);
     }
   } catch (e) {

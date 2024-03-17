@@ -145,7 +145,7 @@ export async function resetWebsite(
     client.website.update({
       where: { id: websiteId },
       data: {
-        resetAt: new Date(),
+        resetAt: client.$dbDate(new Date()),
       },
     }),
   ]).then(async data => {
@@ -181,7 +181,7 @@ export async function deleteWebsite(
     cloudMode
       ? client.website.update({
           data: {
-            deletedAt: new Date(),
+            deletedAt: client.$dbDate(new Date()),
           },
           where: { id: websiteId },
         })

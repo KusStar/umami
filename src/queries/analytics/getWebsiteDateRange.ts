@@ -11,14 +11,14 @@ export async function getWebsiteDateRange(...args: [websiteId: string]) {
 }
 
 async function relationalQuery(websiteId: string) {
-  const { rawQuery, parseFilters } = prisma;
+  const { rawQuery, parseFilters, client } = prisma;
   const { params } = await parseFilters(websiteId, { startDate: new Date(DEFAULT_RESET_DATE) });
 
   const result = await rawQuery(
     `
     select
-      min(created_at) as mindate,
-      max(created_at) as maxdate
+      ${client.$rawDateQuery('min(created_at)')} as mindate,
+      ${client.$rawDateQuery('max(created_at)')} as maxdate
     from website_event
     where website_id = {{websiteId::uuid}}
       and created_at >= {{startDate}}
