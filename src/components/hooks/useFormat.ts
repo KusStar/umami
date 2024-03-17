@@ -18,7 +18,7 @@ export function useFormat() {
   };
 
   const formatDevice = (value: string): string => {
-    return formatMessage(labels[value] || labels.unknown);
+    return labels[value] ? formatMessage(labels[value]) : value;
   };
 
   const formatCountry = (value: string): string => {

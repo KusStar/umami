@@ -25,13 +25,15 @@ export default function WebsiteTableView({
   };
   return (
     <Grid>
-      <GridRow columns="three">
-        <PagesTable {...tableProps} />
-        <BrowsersTable {...tableProps} />
-        <OSTable {...tableProps} />
-      </GridRow>
-      <GridRow columns="three">
-        <DevicesTable {...tableProps} />
+      <GridRow columns="two">
+        <GridRow columns="two">
+          <PagesTable {...tableProps} />
+          <BrowsersTable {...tableProps} />
+        </GridRow>
+        <GridRow columns="two">
+          <OSTable {...tableProps} />
+          <DevicesTable {...tableProps} />
+        </GridRow>
       </GridRow>
       <GridRow columns="two-one">
         <WorldMap data={countryData} />

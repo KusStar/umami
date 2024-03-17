@@ -2,6 +2,7 @@ import MetricsTable, { MetricsTableProps } from './MetricsTable';
 import FilterLink from 'components/common/FilterLink';
 import { useMessages } from 'components/hooks';
 import { useFormat } from 'components/hooks';
+import { generateFromString } from 'generate-avatar';
 
 export function DevicesTable(props: MetricsTableProps) {
   const { formatMessage, labels } = useMessages();
@@ -9,9 +10,17 @@ export function DevicesTable(props: MetricsTableProps) {
 
   function renderLink({ x: device }) {
     return (
-      <FilterLink id="device" value={labels[device] && device} label={formatDevice(device)}>
+      <FilterLink
+        id="device"
+        value={labels[device] ? labels[device] : device}
+        label={formatDevice(device)}
+      >
         <img
-          src={`${process.env.basePath}/images/device/${device?.toLowerCase() || 'unknown'}.png`}
+          src={
+            labels[device]
+              ? `${process.env.basePath}/images/device/${device?.toLowerCase()}.png`
+              : `data:image/svg+xml;utf8,${generateFromString(device)}`
+          }
           alt={device}
           width={16}
           height={16}
