@@ -56,16 +56,16 @@ const schema = {
     payload: yup
       .object()
       .shape({
-        data: yup.object(),
+        data: yup.object().optional(),
         hostname: yup.string().matches(HOSTNAME_REGEX).max(100).optional(),
         ip: yup.string().matches(IP_REGEX),
-        language: yup.string().max(35),
-        referrer: yup.string(),
+        language: yup.string().max(35).optional(),
+        referrer: yup.string().optional(),
         screen: yup.string().max(11).optional(),
-        title: yup.string(),
+        title: yup.string().optional(),
         url: yup.string().optional(),
         website: yup.string().required(),
-        name: yup.string().max(50),
+        name: yup.string().max(50).optional(),
         app: yup.string().optional(),
         os: yup.string().optional(),
         page: yup.string().optional(),
@@ -84,7 +84,7 @@ export default async (req: NextApiRequestCollect, res: NextApiResponse) => {
 
   const { type, payload } = req.body;
 
-  const isApp = payload.app || payload.os;
+  const isApp = Boolean(payload?.app || payload?.os);
 
   if (req.method === 'POST') {
     if (!process.env.DISABLE_BOT_CHECK && isbot(req.headers['user-agent']) && !isApp) {
