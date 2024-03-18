@@ -3,6 +3,7 @@ import FilterLink from 'components/common/FilterLink';
 import { useMessages, useFormat } from 'components/hooks';
 import { generateFromString } from 'generate-avatar';
 import { OS_NAMES } from 'lib/constants';
+import { uuid } from 'lib/crypto';
 
 export function OSTable(props: MetricsTableProps) {
   const { formatMessage, labels } = useMessages();
@@ -17,7 +18,7 @@ export function OSTable(props: MetricsTableProps) {
               ? `${process.env.basePath || ''}/images/os/${
                   os?.toLowerCase().replaceAll(/\W/g, '-') || 'unknown'
                 }.png`
-              : `data:image/svg+xml;utf8,${generateFromString(os)}`
+              : `data:image/svg+xml;utf8,${generateFromString(os || uuid())}`
           }
           alt={os}
           width={16}

@@ -3,6 +3,7 @@ import FilterLink from 'components/common/FilterLink';
 import { useMessages } from 'components/hooks';
 import { useFormat } from 'components/hooks';
 import { generateFromString } from 'generate-avatar';
+import { uuid } from 'lib/crypto';
 
 export function DevicesTable(props: MetricsTableProps) {
   const { formatMessage, labels } = useMessages();
@@ -19,7 +20,7 @@ export function DevicesTable(props: MetricsTableProps) {
           src={
             labels[device]
               ? `${process.env.basePath}/images/device/${device?.toLowerCase()}.png`
-              : `data:image/svg+xml;utf8,${generateFromString(device)}`
+              : `data:image/svg+xml;utf8,${generateFromString(device || uuid())}`
           }
           alt={device}
           width={16}

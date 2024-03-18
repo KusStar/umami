@@ -4,6 +4,7 @@ import { useMessages } from 'components/hooks';
 import { useFormat } from 'components/hooks';
 import { BROWSERS } from 'lib/constants';
 import { generateFromString } from 'generate-avatar';
+import { uuid } from 'lib/crypto';
 
 export function BrowsersTable(props: MetricsTableProps) {
   const { formatMessage, labels } = useMessages();
@@ -12,7 +13,7 @@ export function BrowsersTable(props: MetricsTableProps) {
   function renderLink({ x: browser }) {
     const imgUrl = BROWSERS[browser]
       ? `${process.env.basePath}/images/browsers/${browser}.png`
-      : `data:image/svg+xml;utf8,${generateFromString(browser)}`;
+      : `data:image/svg+xml;utf8,${generateFromString(browser || uuid())}`;
     return (
       <FilterLink id="browser" value={browser} label={formatBrowser(browser)}>
         <img
