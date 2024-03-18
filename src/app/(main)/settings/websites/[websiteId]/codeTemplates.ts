@@ -286,184 +286,462 @@ export const trackInit = () => {
   trackEvent();
 };`;
 
-export const genKotlinCode = (websiteId: string, hostUrl: string) => `/**
-* Data class to represent the tracked properties similarly to the TypeScript type.
-* Nullable types are used to represent optional properties.
-*/
-data class TrackedProperties(
-   val hostname: String?,           // Optional hostname
-   val language: String,            // Required language
-   val referrer: String,            // Required referrer
-   val screen: String,              // Required screen dimensions
-   val title: String,               // Required page title
-   val url: String?,                // Optional page URL
-   val page: String?,               // Optional page name
-   val website: String,             // Required website ID
-   val app: String?,                // Optional app name
-   val os: String?,                 // Optional OS name
-   val device: String?              // Optional device name
-)
+export const genKotlinCode = (websiteId: string, hostUrl: string) => `package your.package
+
+import your.package.BuildConfig
+
+import android.os.Build
+import android.util.Log
+import org.json.JSONObject
+import java.io.DataOutputStream
+import java.net.HttpURLConnection
+import java.net.HttpURLConnection.HTTP_OK
+import java.net.URL
+import java.util.Locale
+import java.util.concurrent.Executors
 
 /**
-* Singleton object to represent the tracking functionality.
-* This is analogous to the functions and variables in the TypeScript example.
-*/
-object Tracking {
-  private var payload = TrackedProperties(
-      website = "",
-      language = "",
-      referrer = "",
-      screen = "",
-      title = "",
-      page = "",
-      hostname = null,
-      url = null,
-      app = null,
-      os = null,
-      device = null
-  )
-
-  private var cache: String? = null
-  private var endpoint: String = ""
-
-  fun init(websiteId: String, hostUrl: String, extraPayload: TrackedProperties? = null) {
-      payload = extraPayload?.let { 
-          payload.copy(
-              hostname = it.hostname ?: payload.hostname,
-              language = it.language,
-              referrer = it.referrer,
-              screen = it.screen,
-              title = it.title,
-              url = it.url ?: payload.url,
-              page = it.page ?: payload.page,
-              website = websiteId,
-              app = it.app ?: payload.app,
-              os = it.os ?: payload.os,
-              device = it.device ?: payload.device
-          )
-      } ?: payload.copy(website = websiteId)
-      endpoint = "$hostUrl/api/send"
-  }
-
-  suspend fun send(payload: Map<String, Any>, type: String = "event"): Response? {
-      val headers = mutableMapOf("Content-Type" to "application/json")
-      cache?.let { headers["x-umami-cache"] = it }
-
-      // Replace \`fetch\` with a Kotlin HTTP client call (e.g., using Ktor or OkHttp).
-      // The below is a pseudo-code representation as Kotlin doesn't have a \`fetch\` function.
-      try {
-          val res = httpClient.post<String>(endpoint) {
-              body = Json.encodeToString(mapOf("type" to type, "payload" to payload))
-              headers(headers)
-          }
-          cache = res
-          return Response(res.status, res.statusText, res)
-      } catch (e: Exception) {
-          println("Error during send: $e")
-          return null
-      }
-  }
-
-  fun trackInit(event: String, payload: Map<String, Any>) {
-    // The \`send\` function is called with the \`type\` parameter set to "event".
-    init("${websiteId}", "${hostUrl}", null)
-
-    send(payload)
-  }
-
-   // More functions for trackEvent and trackInit would be implemented here.
-   // As Kotlin is statically typed, we may need to create several overloads of \`trackEvent\`
-   // to handle the different types of input parameters.
-}`;
-
-export const genJavaCode = (
-  websiteId: string,
-  hostUrl: string,
-) => `import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-
-public class Tracker {
-    private TrackedProperties payload;
-    private Optional<String> cache = Optional.empty();
-    private String endpoint;
-    private static final HttpClient httpClient = HttpClient.newHttpClient();
-    private static final ObjectMapper objectMapper = new ObjectMapper();
-
-    public Tracker() {
-        // Initialize with default values
-        this.payload = new TrackedProperties(null, "", "", "", "", null, null, "", null, null, null);
+ * Data class to represent the tracked properties similarly to the TypeScript type.
+ * Nullable types are used to represent optional properties.
+ */
+data class TrackedProperties(
+    val website: String,
+    val hostname: String?,
+    val language: String?,
+    val referrer: String?,
+    val screen: String?,
+    val title: String?,
+    val url: String?,
+    val page: String?,
+    val app: String?,
+    val os: String?,
+    val device: String?
+) {
+    fun toMap(): Map<String, String> {
+        val map = mutableMapOf<String, String>()
+        map["website"] = website
+        if (hostname != null) map["hostname"] = hostname
+        if (language != null) map["language"] = language
+        if (referrer != null) map["referrer"] = referrer
+        if (screen != null) map["screen"] = screen
+        if (title != null) map["title"] = title
+        if (url != null) map["url"] = url
+        if (page != null) map["page"] = page
+        if (app != null) map["app"] = app
+        if (os != null) map["os"] = os
+        if (device != null) map["device"] = device
+        return map
     }
+}
 
-    public void init(String websiteId, String hostUrl, TrackedProperties extraPayload) {
-        // Combine properties from extraPayload into payload
-        // You need to manually copy over the properties
-        this.payload.setWebsite(websiteId);
-        // ...other properties
-        this.endpoint = hostUrl + "/api/send";
-    }
-
-    public HttpResponse<String> send(Map<String, Object> payloadMap, String type) throws IOException, InterruptedException {
-        Map<String, String> headers = new HashMap<>();
-        headers.put("Content-Type", "application/json");
-        cache.ifPresent(c -> headers.put("x-umami-cache", c));
-
-        HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
-                .uri(URI.create(endpoint))
-                .POST(HttpRequest.BodyPublishers.ofString(toJson(Map.of("type", type, "payload", payloadMap))))
-                .headers(headers.entrySet().stream().flatMap(e -> Stream.of(e.getKey(), e.getValue())).toArray(String[]::new));
-
-        HttpResponse<String> response = httpClient.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString());
-        cache = Optional.of(response.body());
-        return response;
-    }
-
-    public void trackEvent(/* Parameters based on your needs */) {
-        // Implementation depends on how you want to use trackEvent
-    }
-
-    public void trackInit(/* Parameters based on your needs */) {
-        // Implementation depends on how you want to use trackInit
-    }
-
-    // Utility method for JSON conversion
-    private static String toJson(Object value) {
-        try {
-            return objectMapper.writeValueAsString(value);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            return "{}";
+/**
+ * Singleton object to represent the tracking functionality.
+ * This is analogous to the functions and variables in the TypeScript example.
+ */
+object Umami {
+    private fun getDeviceName(): String {
+        val manufacturer = Build.MANUFACTURER
+        val model = Build.MODEL
+        return if (model.lowercase(Locale.getDefault())
+                .startsWith(manufacturer.lowercase(Locale.getDefault()))
+        ) {
+            capitalize(model)
+        } else {
+            capitalize(manufacturer) + " " + model
         }
     }
 
-    // TrackedProperties class with all the properties inside Tracker
-    public static class TrackedProperties {
-        // properties, getters, setters, and constructor (as shown previously)
+    private fun capitalize(s: String?): String {
+        if (s.isNullOrEmpty()) {
+            return ""
+        }
+        val first = s[0]
+        return if (Character.isUpperCase(first)) {
+            s
+        } else {
+            first.uppercaseChar().toString() + s.substring(1)
+        }
     }
 
-    // Main method for demonstration purposes
-    public static void main(String[] args) throws IOException, InterruptedException {
-        Tracker tracker = new Tracker();
-        // Initialize with some dummy values for demonstration
-        tracker.init("${websiteId}", "${hostUrl}", new TrackedProperties(/*...*/));
+    private var payload = TrackedProperties(
+        website = "",
+        language = null,
+        referrer = null,
+        screen = null,
+        title = null,
+        page = null,
+        hostname = null,
+        url = null,
+        app = "krude \${BuildConfig.VERSION_NAME}",
+        os = "Android \${Build.VERSION.RELEASE}, API \${Build.VERSION.SDK_INT}",
+        device = getDeviceName()
+    )
+    private var cache: String? = null
+    private var endpoint: String = ""
+    private val executor = Executors.newSingleThreadExecutor()
 
-        // Simulate an event tracking
-        HttpResponse<String> response = tracker.send(Map.of(
-                "eventName", "click",
-                "eventData", "button1"
-        ), "event");
+    private fun init(websiteId: String, hostUrl: String, extraPayload: TrackedProperties? = null) {
+        payload = extraPayload?.let {
+            payload.copy(
+                website = websiteId,
+                hostname = it.hostname ?: payload.hostname,
+                language = it.language ?: payload.language,
+                referrer = it.referrer ?: payload.referrer,
+                screen = it.screen ?: payload.screen,
+                title = it.title ?: payload.title,
+                url = it.url ?: payload.url,
+                page = it.page ?: payload.page,
+                app = it.app ?: payload.app,
+                os = it.os ?: payload.os,
+                device = it.device ?: payload.device
+            )
+        } ?: payload.copy(website = websiteId)
+        endpoint = "$hostUrl/api/send"
+    }
 
-        System.out.println("Response: " + response.body());
+    private fun send(extraPayload: TrackedProperties?, type: String = "event") {
+        val headers = mutableMapOf("Content-Type" to "application/json")
+        cache?.let { headers["x-umami-cache"] = it }
+
+        val nextPayload = extraPayload?.let {
+            payload.copy(
+                hostname = it.hostname ?: payload.hostname,
+                language = it.language,
+                referrer = it.referrer,
+                screen = it.screen,
+                title = it.title,
+                url = it.url ?: payload.url,
+                page = it.page ?: payload.page,
+                app = it.app ?: payload.app,
+                os = it.os ?: payload.os,
+                device = it.device ?: payload.device
+            )
+        } ?: payload
+
+        val body = JSONObject(mapOf("type" to type, "payload" to nextPayload.toMap()))
+
+        executor.execute {
+            val urlObject = URL(endpoint)
+            val connection = urlObject.openConnection() as HttpURLConnection
+            connection.requestMethod = "POST"
+            connection.doOutput = true
+            connection.useCaches = false
+            connection.connectTimeout = 5000
+            try {
+                headers.forEach { (key, value) -> connection.setRequestProperty(key, value) }
+
+                val outputStream = DataOutputStream(connection.outputStream)
+                outputStream.writeBytes(body.toString())
+                outputStream.flush()
+                outputStream.close()
+
+                val responseCode = connection.responseCode
+
+                if (responseCode == HTTP_OK) {
+                    val data = connection.inputStream.bufferedReader().readText()
+                    cache = data
+                    Log.d(TAG, cache!!)
+                } else {
+                    val errorText = connection.errorStream?.bufferedReader()?.readText()
+                    Log.e(TAG, "Error: $responseCode, \${connection.responseMessage}, $errorText")
+                }
+
+            } catch (e: Exception) {
+                Log.e(TAG, e.stackTraceToString())
+            } finally {
+                connection.disconnect()
+            }
+        }
+    }
+
+    fun trackInit(payload: TrackedProperties? = null) {
+        init("${websiteId}", "${hostUrl}", null)
+
+        send(payload)
+    }
+    
+    fun trackEvent(payload: TrackedProperties? = null) {
+        send(payload)
     }
 }`;
+
+export const genJavaCode = (websiteId: string, hostUrl: string) => `package your.package;
+
+import your.package.BuildConfig;
+
+import android.os.Build;
+import android.util.Log;
+
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+public class Umami {
+    private static Umami INSTANCE = null;
+    private static final String TAG = "Umami";
+    private static final String TYPE_EVENT = "event";
+
+    public static Umami getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new Umami();
+        }
+        return INSTANCE;
+    }
+
+    private String getDeviceName() {
+        String manufacturer = Build.MANUFACTURER;
+        String model = Build.MODEL;
+        if (model.toLowerCase(Locale.getDefault()).startsWith(manufacturer.toLowerCase(Locale.getDefault()))) {
+            return capitalize(model);
+        } else {
+            return capitalize(manufacturer) + " " + model;
+        }
+    }
+
+    private String capitalize(String s) {
+        if (s == null || s.isEmpty()) {
+            return "";
+        }
+        char first = s.charAt(0);
+        if (Character.isUpperCase(first)) {
+            return s;
+        } else {
+            return Character.toUpperCase(first) + s.substring(1);
+        }
+    }
+
+    public static class TrackedProperties {
+        private String website;
+        private String hostname;
+
+        public String getWebsite() {
+            return website;
+        }
+
+        public String getHostname() {
+            return hostname;
+        }
+
+        public String getLanguage() {
+            return language;
+        }
+
+        public String getReferrer() {
+            return referrer;
+        }
+
+        public String getScreen() {
+            return screen;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public String getUrl() {
+            return url;
+        }
+
+        public String getPage() {
+            return page;
+        }
+
+        public String getApp() {
+            return app;
+        }
+
+        public String getOs() {
+            return os;
+        }
+
+        public String getDevice() {
+            return device;
+        }
+
+        private String language;
+        private String referrer;
+        private String screen;
+        private String title;
+        private String url;
+        private String page;
+        private String app;
+        private String os;
+        private String device;
+
+        public Map<String, String> toMap() {
+            Map<String, String> map = new HashMap<>();
+            map.put("website", website);
+            if (hostname != null) map.put("hostname", hostname);
+            if (language != null) map.put("language", language);
+            if (referrer != null) map.put("referrer", referrer);
+            if (screen != null) map.put("screen", screen);
+            if (title != null) map.put("title", title);
+            if (url != null) map.put("url", url);
+            if (page != null) map.put("page", page);
+            if (app != null) map.put("app", app);
+            if (os != null) map.put("os", os);
+            if (device != null) map.put("device", device);
+            return map;
+        }
+
+        public void setReferrer(String referrer) {
+            this.referrer = referrer;
+        }
+
+        public void setWebsite(String website) {
+            this.website = website;
+        }
+
+        public void setHostname(String hostname) {
+            this.hostname = hostname;
+        }
+
+        public void setLanguage(String language) {
+            this.language = language;
+        }
+
+        public void setScreen(String screen) {
+            this.screen = screen;
+        }
+
+        public void setTitle(String title) {
+            this.title = title;
+        }
+
+        public void setUrl(String url) {
+            this.url = url;
+        }
+
+        public void setPage(String page) {
+            this.page = page;
+        }
+
+        public void setApp(String app) {
+            this.app = app;
+        }
+
+        public void setOs(String os) {
+            this.os = os;
+        }
+
+        public void setDevice(String device) {
+            this.device = device;
+        }
+    }
+
+    private TrackedProperties payload;
+    private String cache = null;
+    private String endpoint = "";
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+
+    private void init(String websiteId, String hostUrl, TrackedProperties extraPayload) {
+        payload = new TrackedProperties();
+        payload.setWebsite(websiteId);
+        payload.setApp("krude " + BuildConfig.VERSION_NAME);
+        payload.setOs("Android " + Build.VERSION.RELEASE + ", API " + Build.VERSION.SDK_INT);
+        payload.setDevice(getDeviceName());
+        if (extraPayload != null) {
+            payload.setHostname(extraPayload.hostname != null ? extraPayload.hostname : payload.hostname);
+            payload.setLanguage(extraPayload.language != null ? extraPayload.language : payload.language);
+            payload.setReferrer(extraPayload.referrer != null ? extraPayload.referrer : payload.referrer);
+            payload.setScreen(extraPayload.screen != null ? extraPayload.screen : payload.screen);
+            payload.setTitle(extraPayload.title != null ? extraPayload.title : payload.title);
+            payload.setUrl(extraPayload.url != null ? extraPayload.url : payload.url);
+            payload.setPage(extraPayload.page != null ? extraPayload.page : payload.page);
+            payload.setApp(extraPayload.app != null ? extraPayload.app : payload.app);
+            payload.setOs(extraPayload.os != null ? extraPayload.os : payload.os);
+            payload.setDevice(extraPayload.device != null ? extraPayload.device : payload.device);
+        } else {
+            payload = new TrackedProperties();
+            payload.setWebsite(websiteId);
+        }
+        endpoint = hostUrl + "/api/send";
+    }
+
+    private void send(TrackedProperties extraPayload, String type) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Content-Type", "application/json");
+        if (cache != null) {
+            headers.put("x-umami-cache", cache);
+        }
+        TrackedProperties nextPayload;
+        if (extraPayload != null) {
+            nextPayload = new TrackedProperties();
+            nextPayload.setHostname(extraPayload.hostname != null ? extraPayload.hostname : payload.hostname);
+            nextPayload.setLanguage(extraPayload.language);
+            nextPayload.setReferrer(extraPayload.referrer);
+            nextPayload.setScreen(extraPayload.screen);
+            nextPayload.setTitle(extraPayload.title);
+            nextPayload.setUrl(extraPayload.url != null ? extraPayload.url : payload.url);
+            nextPayload.setPage(extraPayload.page != null ? extraPayload.page : payload.page);
+            nextPayload.setApp(extraPayload.app != null ? extraPayload.app : payload.app);
+            nextPayload.setOs(extraPayload.os != null ? extraPayload.os : payload.os);
+            nextPayload.setDevice(extraPayload.device != null ? extraPayload.device : payload.device);            
+        } else {
+            nextPayload = payload;
+        }
+
+        executor.execute(() -> {
+            try {
+                JSONObject body = new JSONObject();
+                body.put("type", type);
+                body.put("payload", new JSONObject(nextPayload.toMap()));
+                URL urlObject = new URL(endpoint);
+                HttpURLConnection connection = (HttpURLConnection) urlObject.openConnection();
+                connection.setRequestMethod("POST");
+                connection.setDoOutput(true);
+                connection.setUseCaches(false);
+                connection.setConnectTimeout(5000);
+                for (Map.Entry<String, String> entry : headers.entrySet()) {
+                    connection.setRequestProperty(entry.getKey(), entry.getValue());
+                }
+                DataOutputStream outputStream = new DataOutputStream(connection.getOutputStream());
+                outputStream.writeBytes(body.toString());
+                outputStream.flush();
+                outputStream.close();
+                int responseCode = connection.getResponseCode();
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    cache = new BufferedReader(new InputStreamReader(connection.getInputStream())).readLine();
+                    Log.d(TAG, cache);
+                } else {
+                    String errorText = new BufferedReader(new InputStreamReader(connection.getErrorStream())).readLine();
+                    Log.e(TAG, "Error: " + responseCode + ", " + connection.getResponseMessage() + ", " + errorText);
+                }
+                connection.disconnect();
+            } catch (Exception e) {
+                Log.e(TAG, e.toString());
+            }
+        });
+    }
+
+    public void trackInit() {
+        trackInit(null);
+    }
+
+    public void trackInit(TrackedProperties payload) {
+        init(${websiteId}, ${hostUrl}, null);
+        send(payload, TYPE_EVENT);
+    }
+
+    public void trackEvent() {
+        trackEvent(null);
+    }
+
+    public void trackEvent(TrackedProperties payload) {
+        send(payload, null);
+    }
+}
+
+`;
 
 export const genSwiftCode = (websiteId: string, hostUrl: string) => `import Foundation
 
