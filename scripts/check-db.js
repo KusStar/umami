@@ -5,6 +5,8 @@ const chalk = require('chalk');
 const { execSync } = require('child_process');
 const semver = require('semver');
 const path = require('path');
+const { createClient } = require('@libsql/client');
+const fs = require('fs');
 
 const ROOT = path.resolve(__dirname, '..');
 
@@ -13,7 +15,7 @@ if (process.env.SKIP_DB_CHECK) {
   process.exit(0);
 }
 
-const isTurso = process.env.TURSO_DATABASE_URL?.length > 0;
+const isLibSql = process.env.TURSO_DATABASE_URL?.length > 0;
 
 function getDatabaseType(url = process.env.DATABASE_URL) {
   const type = url && url.split(':')[0];
@@ -91,57 +93,57 @@ async function checkV1Tables() {
   }
 }
 
-function execTursoMigrations(dbUrl, token) {
-  try {
-    execSync('turso --version');
-  } catch (e) {
-    error('Turso CLI is not installed.');
-    execSync('curl -sSfL https://get.tur.so/install.sh | bash');
-  }
-  const dbExists = db => {
-    try {
-      const cmd = `turso db shell ${dbUrl} "SELECT name FROM sqlite_master WHERE type='table' AND name='${db}'"`;
-
-      const result = execSync(cmd).toString();
-      return result.split('\n').filter(Boolean).length > 1;
-    } catch (e) {
-      throw new Error(`Database ${db} does not exist.`);
-    }
+async function execLibSqlMigrations(dbUrl, token) {
+  const client = createClient({
+    url: dbUrl,
+    authToken: token,
+  });
+  console.log('Checking for turso migrations...', client);
+  const migrationsDir = path.join(ROOT, 'prisma/migrations');
+  const dirs = fs
+    .readdirSync(migrationsDir)
+    .filter(f => fs.statSync(path.join(migrationsDir, f)).isDirectory());
+  const checkMap = {
+    '01_init': {
+      type: 'table',
+      name: 'user',
+    },
+    '02_report_schema_session_data': {
+      type: 'table',
+      name: 'report',
+    },
+    '03_metric_performance_index': {
+      type: 'index',
+      name: 'event_data_website_id_created_at_idx',
+    },
+    '04_team_redesign': {
+      type: 'index',
+      name: 'website_team_id_idx',
+    },
   };
-  execSync(`turso config token set ${token}`);
-  if (!dbExists('user')) {
-    execSync(
-      `turso db shell ${dbUrl} < ${path.join(ROOT, 'prisma/migrations/01_init/migration.sql')}`,
+  for (const dir of dirs) {
+    const migration = fs.readFileSync(path.join(migrationsDir, dir, './migration.sql'), 'utf-8');
+    console.log('Executing migration', `${dir}/migration.sql`);
+    let exists = false;
+    const check = checkMap[dir];
+    const result = await client.execute(
+      `SELECT name FROM sqlite_master 
+      WHERE type='${check.type}' 
+      AND name='${check.name}'`,
     );
-  }
-  if (!dbExists('session_data')) {
-    execSync(
-      `turso db shell ${dbUrl} < ${path.join(
-        ROOT,
-        'prisma/migrations/02_report_schema_session_data/migration.sql',
-      )}`,
-    );
-  }
-  if (!dbExists('event_data')) {
-    execSync(
-      `turso db shell ${dbUrl} < ${path.join(
-        ROOT,
-        'prisma/migrations/03_metric_performance_index/migration.sql',
-      )}`,
-    );
-  }
-  if (!dbExists('team')) {
-    execSync(
-      `turso db shell ${dbUrl} < ${path.join(
-        ROOT,
-        'prisma/migrations/04_team_redesign/migration.sql',
-      )}`,
-    );
+    if (result.rows.length > 0) {
+      console.log('migration ran, skip');
+      exists = true;
+    }
+    if (!exists) {
+      await client.executeMultiple(migration);
+      console.log('migration done');
+    }
   }
 }
 
 async function applyMigration() {
-  if (databaseType === 'sqlite' && isTurso) {
+  if (databaseType === 'sqlite' && isLibSql) {
     const token = process.env.TURSO_AUTH_TOKEN;
     const dbUrl = process.env.TURSO_DATABASE_URL;
     if (!token) {
@@ -150,8 +152,9 @@ async function applyMigration() {
     if (!dbUrl) {
       throw new Error('TURSO_DATABASE_URL is not defined.');
     }
-    execTursoMigrations(dbUrl, token);
+    await execLibSqlMigrations(dbUrl, token);
     success('Database is up to date.');
+    return;
   }
   console.log(execSync('prisma migrate deploy').toString());
 
