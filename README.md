@@ -4,6 +4,7 @@ Umami is a simple, fast, privacy-focused alternative to Google Analytics.
 
 Forked from [umami-software/umami](https://github.com/umami-software/umami), this fork adds a few features:
 
+- [x] Support for SQLite, applied [Maxime-J/umami-sqlite](https://github.com/Maxime-J/umami-sqlite).
 - [x] Support for [Turso](https://turso.tech) with libSQL, ultra fast.
 - [x] Support tracking events for other platforms like Android, iOS, not just web. And provide a copy and paste intergration code for tracking events.
 - [x] Rename `website` to `app`, support custom app id, instead of UUID.
