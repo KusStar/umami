@@ -1,103 +1,37 @@
-# umami
+# umami-universal
 
 Umami is a simple, fast, privacy-focused alternative to Google Analytics.
 
-## Getting started
+Forked from [umami-software/umami](https://github.com/umami-software/umami), this fork adds a few features:
 
-A detailed getting started guide can be found at [https://umami.is/docs/](https://umami.is/docs/)
+- [x] Support for [Turso](https://turso.tech) with libSQL, ultra fast.
+- [x] Support tracking events for other platforms like Android, iOS, not just web. And provide a copy and paste intergration code for tracking events.
+- [x] Rename `website` to `app`, support custom app id, instead of UUID.
 
-## Installing from source
+## Deploy
 
-### Requirements
+### Serverless
 
-- A server with Node.js version 16.13 or newer
-- A database. Umami supports [MySQL](https://www.mysql.com/) and [Postgresql](https://www.postgresql.org/) databases.
+1. Create a new database on [Turso](https://turso.tech), get the `TURSO_DATABASE_URL` from URL(`libsql://xxx`)and `TURSO_AUTH_TOKEN` from `Gernerate Token`.
 
-### Install Yarn
+![turso](docs/turso.png)
 
-```
-npm install -g yarn
-```
+2. Deploy on Vercel
 
-### Get the source code and install packages
+<a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fkusstar%2Fumami-universal&amp;env=DATABASE_URL,TURSO_DATABASE_URL,TURSO_AUTH_TOKEN"><img src="https://vercel.com/button" alt="Deploy with Vercel"></a>
 
-```
-git clone https://github.com/umami-software/umami.git
-cd umami
-yarn install
-```
+Click the button above to deploy on Vercel, and fill the Environment Variables `DATABASE_URL=file:./dev.db`, `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN` with the value you get from Turso.
 
-### Configure umami
+3. Integrate with your app
 
-Create an `.env` file with the following
+After deploy, open your deploy umami, you can login with the default username `admin` and password `umami`.
 
-```
-DATABASE_URL=connection-url
-```
+Go to `settings/websites` and then click `Add app` create a new app
 
-The connection url is in the following format:
+![create](docs/create.png)
 
-```
-postgresql://username:mypassword@localhost:5432/mydb
+After create, you can see the app item in the table, then click the `copy` button.
 
-mysql://username:mypassword@localhost:3306/mydb
-```
+![copy](docs/copy.png)
 
-### Build the application
-
-```bash
-yarn build
-```
-
-The build step will also create tables in your database if you are installing for the first time. It will also create a login user with username **admin** and password **umami**.
-
-### Start the application
-
-```bash
-yarn start
-```
-
-By default this will launch the application on `http://localhost:3000`. You will need to either
-[proxy](https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/) requests from your web server
-or change the [port](https://nextjs.org/docs/api-reference/cli#production) to serve the application directly.
-
-## Installing with Docker
-
-To build the umami container and start up a Postgres database, run:
-
-```bash
-docker compose up -d
-```
-
-Alternatively, to pull just the Umami Docker image with PostgreSQL support:
-
-```bash
-docker pull ghcr.io/umami-software/umami:postgresql-latest
-```
-
-Or with MySQL support:
-
-```bash
-docker pull ghcr.io/umami-software/umami:mysql-latest
-```
-
-## Getting updates
-
-To get the latest features, simply do a pull, install any new dependencies, and rebuild:
-
-```bash
-git pull
-yarn install
-yarn build
-```
-
-To update the Docker image, simply pull the new images and rebuild:
-
-```bash
-docker compose pull
-docker compose up --force-recreate
-```
-
-## License
-
-MIT
+Then you can paste the code to your app, and start tracking events.
