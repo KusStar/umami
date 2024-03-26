@@ -15,7 +15,7 @@ if (process.env.SKIP_DB_CHECK) {
   process.exit(0);
 }
 
-const isLibSql = process.env.TURSO_DATABASE_URL?.length > 0;
+const isLibSql = process.env.LIBSQL_DATABASE_URL?.length > 0;
 
 function getDatabaseType(url = process.env.DATABASE_URL) {
   const type = url && url.split(':')[0];
@@ -144,13 +144,13 @@ async function execLibSqlMigrations(dbUrl, token) {
 
 async function applyMigration() {
   if (databaseType === 'sqlite' && isLibSql) {
-    const token = process.env.TURSO_AUTH_TOKEN;
-    const dbUrl = process.env.TURSO_DATABASE_URL;
+    const token = process.env.LIBSQL_AUTH_TOKEN;
+    const dbUrl = process.env.LIBSQL_DATABASE_URL;
     if (!token) {
-      throw new Error('TURSO_AUTH_TOKEN is not defined.');
+      throw new Error('LIBSQL_AUTH_TOKEN is not defined.');
     }
     if (!dbUrl) {
-      throw new Error('TURSO_DATABASE_URL is not defined.');
+      throw new Error('LIBSQL_DATABASE_URL is not defined.');
     }
     await execLibSqlMigrations(dbUrl, token);
     success('Database is up to date.');

@@ -27,8 +27,8 @@ export function getClient(params?: {
 
   if (dbType === SQLITE) {
     const libsql = createClient({
-      url: `${process.env.TURSO_DATABASE_URL}`,
-      authToken: `${process.env.TURSO_AUTH_TOKEN}`,
+      url: `${process.env.LIBSQL_DATABASE_URL}`,
+      authToken: `${process.env.LIBSQL_AUTH_TOKEN}`,
     });
 
     adapter = new PrismaLibSQL(libsql);

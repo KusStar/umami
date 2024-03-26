@@ -13,14 +13,14 @@ Forked from [umami-software/umami](https://github.com/umami-software/umami), thi
 
 ### 1. Create a new database on [Turso](https://turso.tech)
 
-Get the `TURSO_DATABASE_URL` from URL(like `libsql://xxx`) and `TURSO_AUTH_TOKEN` from `Gernerate Token`.
+Get the `LIBSQL_DATABASE_URL` from URL(like `libsql://xxx`) and `LIBSQL_AUTH_TOKEN` from `Gernerate Token`.
 ![turso](docs/turso.png)
 
 ### 2. Deploy on [Vercel](https://vercel.com)
 
-<a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fkusstar%2Fumami-universal&amp;env=DATABASE_URL,TURSO_DATABASE_URL,TURSO_AUTH_TOKEN" target="_blank"><img src="https://vercel.com/button" alt="Deploy with Vercel"></a>
+<a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fkusstar%2Fumami-universal&env=DATABASE_URL,LIBSQL_DATABASE_URL,LIBSQL_AUTH_TOKEN" target="_blank"><img src="https://vercel.com/button" alt="Deploy with Vercel"></a>
 
-Click the button above to deploy on Vercel, and fill the Environment Variables `DATABASE_URL=file:./dev.db`, `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN` with the value you get from Turso.
+Click the button above to deploy on Vercel, and fill the Environment Variables `DATABASE_URL=file:./dev.db`, `LIBSQL_DATABASE_URL`, `LIBSQL_AUTH_TOKEN` with the value you get from Turso.
 
 ### 3. Integrate with your app
 
