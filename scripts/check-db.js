@@ -91,6 +91,55 @@ async function checkV1Tables() {
   }
 }
 
+function execTursoMigrations(dbUrl, token) {
+  try {
+    execSync('turso --version');
+  } catch (e) {
+    error('Turso CLI is not installed.');
+    execSync('curl -sSfL https://get.tur.so/install.sh | bash');
+  }
+  const dbExists = db => {
+    try {
+      const cmd = `turso db shell ${dbUrl} "SELECT name FROM sqlite_master WHERE type='table' AND name='${db}'"`;
+
+      const result = execSync(cmd).toString();
+      return result.split('\n').filter(Boolean).length > 1;
+    } catch (e) {
+      throw new Error(`Database ${db} does not exist.`);
+    }
+  };
+  execSync(`turso config token set ${token}`);
+  if (!dbExists('user')) {
+    execSync(
+      `turso db shell ${dbUrl} < ${path.join(ROOT, 'prisma/migrations/01_init/migration.sql')}`,
+    );
+  }
+  if (!dbExists('session_data')) {
+    execSync(
+      `turso db shell ${dbUrl} < ${path.join(
+        ROOT,
+        'prisma/migrations/02_report_schema_session_data/migration.sql',
+      )}`,
+    );
+  }
+  if (!dbExists('event_data')) {
+    execSync(
+      `turso db shell ${dbUrl} < ${path.join(
+        ROOT,
+        'prisma/migrations/03_metric_performance_index/migration.sql',
+      )}`,
+    );
+  }
+  if (!dbExists('team')) {
+    execSync(
+      `turso db shell ${dbUrl} < ${path.join(
+        ROOT,
+        'prisma/migrations/04_team_redesign/migration.sql',
+      )}`,
+    );
+  }
+}
+
 async function applyMigration() {
   if (databaseType === 'sqlite' && isTurso) {
     const token = process.env.TURSO_AUTH_TOKEN;
@@ -101,46 +150,7 @@ async function applyMigration() {
     if (!dbUrl) {
       throw new Error('TURSO_DATABASE_URL is not defined.');
     }
-    const dbExists = db => {
-      try {
-        const cmd = `turso db shell ${dbUrl} "SELECT name FROM sqlite_master WHERE type='table' AND name='${db}'"`;
-
-        const result = execSync(cmd).toString();
-        return result.split('\n').filter(Boolean).length > 1;
-      } catch (e) {
-        throw new Error(`Database ${db} does not exist.`);
-      }
-    };
-    execSync(`turso config token set ${token}`);
-    if (!dbExists('user')) {
-      execSync(
-        `turso db shell ${dbUrl} < ${path.join(ROOT, 'prisma/migrations/01_init/migration.sql')}`,
-      );
-    }
-    if (!dbExists('session_data')) {
-      execSync(
-        `turso db shell ${dbUrl} < ${path.join(
-          ROOT,
-          'prisma/migrations/02_report_schema_session_data/migration.sql',
-        )}`,
-      );
-    }
-    if (!dbExists('event_data')) {
-      execSync(
-        `turso db shell ${dbUrl} < ${path.join(
-          ROOT,
-          'prisma/migrations/03_metric_performance_index/migration.sql',
-        )}`,
-      );
-    }
-    if (!dbExists('team')) {
-      execSync(
-        `turso db shell ${dbUrl} < ${path.join(
-          ROOT,
-          'prisma/migrations/04_team_redesign/migration.sql',
-        )}`,
-      );
-    }
+    execTursoMigrations(dbUrl, token);
     success('Database is up to date.');
   }
   console.log(execSync('prisma migrate deploy').toString());
